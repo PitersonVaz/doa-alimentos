@@ -30,3 +30,14 @@ O DoaAlimentos e uma aplicacao web projetada para intermediar a doacao segura de
 1. Clone este repositorio:
    git clone https://github.com/PitersonVaz/doa-alimentos.git
 2. Abra o arquivo doa-alimentos-mvp.html em qualquer navegador web moderno.
+
+---
+
+## Observacoes Academicas
+Este projeto foi desenvolvido como MVP para a disciplina de Design Profissional no curso de Análise e Desenvolvimento de Sistemas na Universidade Positivo.
+
+### Objetivos do Projeto Pedagógico:
+- Aplicar conceitos de desenvolvimento web focado em impacto social.
+- Demonstrar governança e conformidade com normas sanitárias (ANVISA) e legislação vigente (Lei 14.016/2020).
+- Estruturar uma solução estática de baixo consumo computacional (TI Verde).
+
