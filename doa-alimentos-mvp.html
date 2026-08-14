@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plataforma DoaAlimentos - MVP Completo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { green: '#10B981', dark: '#121826', card: '#1F2937' }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-brand-dark text-gray-100 min-h-screen font-sans flex flex-col justify-between">
+
+  <!-- BARRA SUPREMA DE TESTE -->
+  <div class="bg-emerald-950 border-b border-emerald-700 p-2 text-center text-xs flex flex-wrap justify-center gap-2 items-center">
+    <span class="text-emerald-400 font-bold">🛠️ Modo de Teste / Navegação Rápida:</span>
+    <button onclick="navigate('screen-home')" class="bg-emerald-900 hover:bg-emerald-800 text-white px-2 py-1 rounded">1. Início / Cadastros</button>
+    <button onclick="navigate('screen-login-admin')" class="bg-emerald-900 hover:bg-emerald-800 text-white px-2 py-1 rounded">2. Login Admin</button>
+    <button onclick="navigate('screen-admin-panel')" class="bg-emerald-900 hover:bg-emerald-800 text-white px-2 py-1 rounded">3. Painel Admin</button>
+    <button onclick="navigate('screen-doador-panel')" class="bg-emerald-900 hover:bg-emerald-800 text-white px-2 py-1 rounded">4. Painel Supermercado</button>
+    <button onclick="navigate('screen-ong-panel')" class="bg-emerald-900 hover:bg-emerald-800 text-white px-2 py-1 rounded">5. Painel ONG (Feed)</button>
+  </div>
+
+  <header class="border-b border-gray-800 p-4 bg-gray-900/50">
+    <div class="max-w-4xl mx-auto flex justify-between items-center">
+      <h1 class="text-xl font-bold text-emerald-400 flex items-center gap-2">🌱 DoaAlimentos</h1>
+      <span class="text-xs text-gray-400 border border-gray-700 px-2 py-1 rounded">Protótipo Funcional - ADS</span>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto w-full p-4 my-auto">
+
+    <div class="max-w-2xl mx-auto mb-4 text-[11px] text-gray-500 text-center border border-gray-800 rounded-lg p-2 bg-gray-900/40">
+      ⚠️ Dados de demonstração: cadastros e lotes ficam visíveis para qualquer pessoa que abrir este protótipo. O login do admin é apenas ilustrativo (não é autenticação real).
+    </div>
+
+    <!-- TELA 1: Início e Escolha de Perfil -->
+    <div id="screen-home" class="view-screen space-y-6 text-center">
+      <div class="space-y-2">
+        <h2 class="text-2xl md:text-3xl font-bold">Combate ao Desperdício & Segurança Alimentar</h2>
+        <p class="text-gray-400 text-sm max-w-lg mx-auto">Conectando doadores a ONGs com total conformidade sanitária (ANVISA).</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left max-w-2xl mx-auto">
+        <button onclick="openRegister('doador')" class="bg-brand-card border border-gray-700 hover:border-emerald-500 p-5 rounded-xl transition">
+          <div class="text-3xl mb-1">🏪</div>
+          <h3 class="text-lg font-bold text-emerald-400">Cadastrar Empresa Doadora</h3>
+          <p class="text-xs text-gray-400 mt-1">Supermercados, Hortifrutis e Padarias com CNPJ ativo.</p>
+        </button>
+
+        <button onclick="openRegister('receptor')" class="bg-brand-card border border-gray-700 hover:border-emerald-500 p-5 rounded-xl transition">
+          <div class="text-3xl mb-1">🥗</div>
+          <h3 class="text-lg font-bold text-emerald-400">Cadastrar ONG / Cozinha</h3>
+          <p class="text-xs text-gray-400 mt-1">Instituições sociais e restaurantes comunitários cadastrados.</p>
+        </button>
+      </div>
+
+      <div class="pt-4 border-t border-gray-800 flex justify-center gap-4 text-xs">
+        <button onclick="navigate('screen-login-admin')" class="text-gray-400 hover:text-emerald-400">🔒 Acesso Restrito: Administrador</button>
+      </div>
+    </div>
+
+    <!-- TELA 2: Formulário de Cadastro -->
+    <div id="screen-register" class="view-screen hidden max-w-xl mx-auto bg-brand-card p-6 rounded-xl border border-gray-700">
+      <h2 id="reg-title" class="text-xl font-bold text-emerald-400 mb-4">Cadastro</h2>
+      <form onsubmit="handleRegisterSubmit(event)" class="space-y-3">
+        <input type="hidden" id="reg-role" value="doador">
+        <input type="text" required id="reg-name" placeholder="Razão Social / Nome Institucional" class="w-full bg-gray-900 border border-gray-700 rounded p-2.5 text-sm">
+        <input type="text" required id="reg-cnpj" placeholder="CNPJ (00.000.000/0001-00)" class="w-full bg-gray-900 border border-gray-700 rounded p-2.5 text-sm">
+        <input type="text" required id="reg-phone" placeholder="Telefone / WhatsApp" class="w-full bg-gray-900 border border-gray-700 rounded p-2.5 text-sm">
+        <div class="border-t border-gray-700 pt-3">
+          <label class="block text-xs text-gray-300 mb-1">Upload de Alvará Sanitário / Documento Legítimo (ANVISA)</label>
+          <input type="file" required id="reg-doc" class="text-xs text-gray-400 file:bg-emerald-900/50 file:text-emerald-400 file:border-0 file:p-2 file:rounded">
+        </div>
+        <p id="reg-error" class="hidden text-xs text-red-400"></p>
+        <button type="submit" id="reg-submit-btn" class="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed font-bold py-2.5 rounded text-sm transition mt-2">Solicitar Homologação Cadastral</button>
+      </form>
+    </div>
+
+    <!-- TELA 3: Login do Administrador -->
+    <div id="screen-login-admin" class="view-screen hidden max-w-md mx-auto bg-brand-card p-6 rounded-xl border border-gray-700 text-center">
+      <div class="text-3xl mb-2">🔒</div>
+      <h2 class="text-lg font-bold text-emerald-400 mb-1">Acesso Restrito - Gestão da Plataforma</h2>
+      <p class="text-xs text-gray-400 mb-4">Área reservada para validação de documentação sanitária e CNPJs.</p>
+
+      <form onsubmit="handleAdminLogin(event)" class="space-y-3 text-left">
+        <div>
+          <label class="block text-xs text-gray-300 mb-1">Usuário Gestor</label>
+          <input type="text" id="admin-user" value="admin" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs text-gray-300 mb-1">Senha de Segurança</label>
+          <input type="password" id="admin-pass" value="123" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-sm">
+        </div>
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-2 rounded text-sm transition">Autenticar e Entrar</button>
+      </form>
+    </div>
+
+    <!-- TELA 4: Painel do Administrador -->
+    <div id="screen-admin-panel" class="view-screen hidden space-y-4 max-w-2xl mx-auto bg-brand-card p-6 rounded-xl border border-gray-700">
+      <div class="flex justify-between items-center border-b border-gray-700 pb-3">
+        <h2 class="text-lg font-bold text-emerald-400">🛡️ Painel de Controle e Regularização Sanitária</h2>
+        <span class="text-xs bg-emerald-950 text-emerald-400 border border-emerald-700 px-2 py-1 rounded">Sessão Ativa</span>
+      </div>
+      <p class="text-xs text-gray-400">Verifique a autenticidade do CNPJ e Alvará antes de homologar a conta na rede doação.</p>
+
+      <div id="admin-accounts-list" class="space-y-3">
+        <p class="text-xs text-gray-500 italic">Carregando cadastros...</p>
+      </div>
+    </div>
+
+    <!-- TELA 5: Painel da Empresa Doadora -->
+    <div id="screen-doador-panel" class="view-screen hidden space-y-6 max-w-2xl mx-auto">
+      <div class="bg-brand-card p-6 rounded-xl border border-gray-700 space-y-4">
+        <div class="flex justify-between items-center border-b border-gray-700 pb-3">
+          <h2 class="text-lg font-bold text-emerald-400">🏪 Painel da Empresa: Supermercado Central</h2>
+          <span class="text-xs text-emerald-400 font-bold border border-emerald-500 px-2 py-0.5 rounded">Status: Homologado</span>
+        </div>
+
+        <h3 class="text-sm font-bold text-gray-200">Cadastrar Novo Lote de Alimentos para Doação</h3>
+        <form onsubmit="handleNewDonation(event)" class="space-y-3">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <input type="text" required id="don-item" placeholder="Nome do Alimento (ex: Tomate Italiano)" class="bg-gray-900 border border-gray-700 rounded p-2 text-sm">
+            <select id="don-cat" class="bg-gray-900 border border-gray-700 rounded p-2 text-sm text-gray-300">
+              <option>Hortifrúti</option>
+              <option>Padaria / Panificação</option>
+              <option>Laticínios</option>
+              <option>Grãos e Secos</option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <input type="text" required id="don-qty" placeholder="Quantidade (ex: 45 Kg)" class="bg-gray-900 border border-gray-700 rounded p-2 text-sm">
+            <div>
+              <label class="block text-[10px] text-gray-400">Data Limite de Validade *</label>
+              <input type="date" required id="don-date" class="w-full bg-gray-900 border border-gray-700 rounded p-1.5 text-sm text-gray-200">
+            </div>
+          </div>
+
+          <div class="bg-emerald-950/40 border border-emerald-800 p-3 rounded space-y-2">
+            <p class="text-xs font-bold text-emerald-400">📋 Declaração Sanitária Obrigatória (ANVISA / Lei 14.016):</p>
+            <label class="flex items-start gap-2 text-xs text-gray-300 cursor-pointer">
+              <input type="checkbox" required class="mt-0.5 rounded accent-emerald-500">
+              <span>Atesto que os produtos estão próprios para consumo, dentro do prazo de validade e mantidos sob temperatura/embalagem adequada.</span>
+            </label>
+          </div>
+
+          <p id="don-error" class="hidden text-xs text-red-400"></p>
+          <button type="submit" id="don-submit-btn" class="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed font-bold py-2.5 rounded text-sm transition">Disponibilizar Lote para ONGs</button>
+        </form>
+      </div>
+
+      <div class="bg-brand-card p-6 rounded-xl border border-gray-700 space-y-3">
+        <h3 class="text-sm font-bold text-gray-200">Meus Lotes Ofertados</h3>
+        <div id="doador-history-list" class="space-y-2">
+          <p class="text-xs text-gray-500 italic">Carregando lotes...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TELA 6: Painel da ONG -->
+    <div id="screen-ong-panel" class="view-screen hidden space-y-4 max-w-2xl mx-auto">
+      <div class="bg-brand-card p-4 rounded-xl border border-gray-700 flex justify-between items-center">
+        <div>
+          <h2 class="text-lg font-bold text-emerald-400">🥗 Painel da ONG: Cozinha Comunitária Esperança</h2>
+          <p class="text-xs text-gray-400">Alimentos disponíveis para coleta prioritária ordenados por urgência de validade.</p>
+        </div>
+      </div>
+
+      <div id="ong-feed-list" class="space-y-3">
+        <p class="text-xs text-gray-500 italic">Carregando lotes...</p>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="border-t border-gray-800 p-3 text-center text-[11px] text-gray-500">
+    Desenvolvido sob princípios de TI Verde e Inclusão Digital.
+  </footer>
+
+  <script>
+    const ACCOUNTS_KEY = 'app_accounts';
+    const ITEMS_KEY = 'app_items';
+    const SHARED = true; // visível para admin, doadores e ONGs ao mesmo tempo
+
+    const SEED_ACCOUNTS = [
+      { id: 1, name: 'Supermercado Central Ltda', cnpj: '12.345.678/0001-90', role: 'doador', status: 'approved' },
+      { id: 2, name: 'Padaria Pão Quente', cnpj: '98.765.432/0001-10', role: 'doador', status: 'pending' },
+      { id: 3, name: 'Cozinha Comunitária Esperança', cnpj: '45.111.222/0001-33', role: 'receptor', status: 'approved' }
+    ];
+
+    const SEED_ITEMS = [
+      { id: 101, title: 'Bananas Caturra (30kg)', donor: 'Supermercado Central', cat: 'Hortifruti', validity: addDays(1), reserved: false },
+      { id: 102, title: 'Pães Franceses Assados (15kg)', donor: 'Padaria Pão Quente', cat: 'Padaria', validity: addDays(2), reserved: false },
+      { id: 103, title: 'Arroz e Feijão Lotes Fechados (50kg)', donor: 'Supermercado Central', cat: 'Grãos', validity: addDays(10), reserved: false }
+    ];
+
+    function addDays(n) {
+      const d = new Date();
+      d.setDate(d.getDate() + n);
+      return d.toISOString().slice(0, 10);
+    }
+
+    // Calcula a urgência real com base na data de validade (em vez de um campo fixo)
+    function computeStatus(validityStr) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const validity = new Date(validityStr + 'T00:00:00');
+      const diffDays = Math.round((validity - today) / (1000 * 60 * 60 * 24));
+      if (diffDays <= 1) return 'urgent';
+      if (diffDays <= 3) return 'warning';
+      return 'ok';
+    }
+
+    async function loadAccounts() {
+      try {
+        const result = await window.storage.get(ACCOUNTS_KEY, SHARED);
+        if (!result) return SEED_ACCOUNTS.slice();
+        return JSON.parse(result.value);
+      } catch (err) {
+        return SEED_ACCOUNTS.slice();
+      }
+    }
+
+    async function saveAccounts(accounts) {
+      try {
+        return !!(await window.storage.set(ACCOUNTS_KEY, JSON.stringify(accounts), SHARED));
+      } catch (err) {
+        console.error('Erro ao salvar cadastro:', err);
+        return false;
+      }
+    }
+
+    async function loadItems() {
+      try {
+        const result = await window.storage.get(ITEMS_KEY, SHARED);
+        if (!result) return SEED_ITEMS.slice();
+        return JSON.parse(result.value);
+      } catch (err) {
+        return SEED_ITEMS.slice();
+      }
+    }
+
+    async function saveItems(items) {
+      try {
+        return !!(await window.storage.set(ITEMS_KEY, JSON.stringify(items), SHARED));
+      } catch (err) {
+        console.error('Erro ao salvar lote:', err);
+        return false;
+      }
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.innerText = str == null ? '' : String(str);
+      return div.innerHTML;
+    }
+
+    function navigate(screenId) {
+      document.querySelectorAll('.view-screen').forEach(s => s.classList.add('hidden'));
+      document.getElementById(screenId).classList.remove('hidden');
+
+      if (screenId === 'screen-admin-panel') renderAdmin();
+      if (screenId === 'screen-doador-panel') renderDoador();
+      if (screenId === 'screen-ong-panel') renderONG();
+    }
+
+    function openRegister(role) {
+      navigate('screen-register');
+      document.getElementById('reg-role').value = role;
+      document.getElementById('reg-title').innerText = role === 'doador' ? 'Cadastro de Empresa Doadora' : 'Cadastro de ONG / Cozinha';
+      document.getElementById('reg-error').classList.add('hidden');
+    }
+
+    async function handleRegisterSubmit(e) {
+      e.preventDefault();
+      const errorEl = document.getElementById('reg-error');
+      const submitBtn = document.getElementById('reg-submit-btn');
+      errorEl.classList.add('hidden');
+
+      const role = document.getElementById('reg-role').value;
+      const name = document.getElementById('reg-name').value;
+      const cnpj = document.getElementById('reg-cnpj').value;
+      const phone = document.getElementById('reg-phone').value;
+      const docInput = document.getElementById('reg-doc');
+      const docName = (docInput.files && docInput.files[0]) ? docInput.files[0].name : '';
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Enviando...';
+
+      const accounts = await loadAccounts();
+      accounts.push({ id: Date.now(), name, cnpj, phone, docName, role, status: 'pending' });
+      const ok = await saveAccounts(accounts);
+
+      submitBtn.disabled = false;
+      submitBtn.innerText = 'Solicitar Homologação Cadastral';
+
+      if (!ok) {
+        errorEl.innerText = 'Não foi possível enviar o cadastro agora. Tente novamente.';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      alert('Cadastro enviado com sucesso! Aguarde a validação sanitária do Administrador.');
+      e.target.reset();
+      navigate('screen-home');
+    }
+
+    function handleAdminLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('admin-user').value;
+      const p = document.getElementById('admin-pass').value;
+      if (u === 'admin' && p === '123') {
+        navigate('screen-admin-panel');
+      } else {
+        alert('Credenciais incorretas! (Use: admin / 123)');
+      }
+    }
+
+    async function renderAdmin() {
+      const container = document.getElementById('admin-accounts-list');
+      container.innerHTML = `<p class="text-xs text-gray-500 italic">Carregando cadastros...</p>`;
+      const accounts = await loadAccounts();
+      container.innerHTML = '';
+
+      accounts.forEach(acc => {
+        const div = document.createElement('div');
+        div.className = "bg-gray-900 p-3 rounded border border-gray-800 flex justify-between items-center text-xs";
+        div.innerHTML = `
+          <div>
+            <p class="font-bold text-gray-200">${escapeHtml(acc.name)} <span class="text-[10px] bg-gray-800 text-emerald-400 px-1 py-0.5 rounded">${acc.role.toUpperCase()}</span></p>
+            <p class="text-gray-400">CNPJ: ${escapeHtml(acc.cnpj)} | Status: <span class="font-bold ${acc.status === 'approved' ? 'text-emerald-400' : 'text-yellow-400'}">${acc.status.toUpperCase()}</span></p>
+          </div>
+          ${acc.status === 'pending' ? `
+            <div class="flex gap-1">
+              <button onclick="approveAccount(${acc.id})" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold px-2 py-1 rounded">Aprovar</button>
+            </div>
+          ` : '<span class="text-emerald-500 font-bold">✓ Homologado</span>'}
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    async function approveAccount(id) {
+      const accounts = await loadAccounts();
+      const updated = accounts.map(a => a.id === id ? {...a, status: 'approved'} : a);
+      await saveAccounts(updated);
+      await renderAdmin();
+    }
+
+    async function handleNewDonation(e) {
+      e.preventDefault();
+      const errorEl = document.getElementById('don-error');
+      const submitBtn = document.getElementById('don-submit-btn');
+      errorEl.classList.add('hidden');
+
+      const title = document.getElementById('don-item').value + ' (' + document.getElementById('don-qty').value + ')';
+      const cat = document.getElementById('don-cat').value;
+      const validity = document.getElementById('don-date').value;
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Enviando...';
+
+      const items = await loadItems();
+      items.unshift({ id: Date.now(), title, donor: 'Supermercado Central', cat, validity, reserved: false });
+      const ok = await saveItems(items);
+
+      submitBtn.disabled = false;
+      submitBtn.innerText = 'Disponibilizar Lote para ONGs';
+
+      if (!ok) {
+        errorEl.innerText = 'Não foi possível salvar o lote agora. Tente novamente.';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      alert('Lote cadastrado e em conformidade sanitária!');
+      e.target.reset();
+      await renderDoador();
+    }
+
+    async function renderDoador() {
+      const container = document.getElementById('doador-history-list');
+      container.innerHTML = `<p class="text-xs text-gray-500 italic">Carregando lotes...</p>`;
+      const items = await loadItems();
+      container.innerHTML = '';
+
+      items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = "bg-gray-900 p-2.5 rounded text-xs flex justify-between items-center";
+        div.innerHTML = `
+          <div>
+            <p class="font-bold text-gray-200">${escapeHtml(item.title)}</p>
+            <p class="text-gray-400">Categoria: ${escapeHtml(item.cat)} | Validade: ${escapeHtml(item.validity)}</p>
+          </div>
+          <span class="px-2 py-0.5 rounded text-[10px] font-bold ${item.reserved ? 'bg-purple-900 text-purple-300' : 'bg-emerald-900 text-emerald-300'}">
+            ${item.reserved ? 'RESERVADO POR ONG' : 'DISPONÍVEL'}
+          </span>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    async function renderONG() {
+      const container = document.getElementById('ong-feed-list');
+      container.innerHTML = `<p class="text-xs text-gray-500 italic">Carregando lotes...</p>`;
+      const items = await loadItems();
+      container.innerHTML = '';
+
+      // Ordena por urgência (mais próximo do vencimento primeiro)
+      const sorted = items.slice().sort((a, b) => new Date(a.validity) - new Date(b.validity));
+
+      sorted.forEach(item => {
+        const status = computeStatus(item.validity);
+        let badgeColor = "bg-emerald-900 text-emerald-300 border-emerald-700";
+        let badgeText = "🟢 Validade OK";
+
+        if (status === 'urgent') {
+          badgeColor = "bg-red-900/80 text-red-200 border-red-700 font-bold animate-pulse";
+          badgeText = "🔴 URGENTE: Vence em Breve!";
+        } else if (status === 'warning') {
+          badgeColor = "bg-yellow-900 text-yellow-200 border-yellow-700";
+          badgeText = "🟡 Atenção: Vence em Breve";
+        }
+
+        const card = document.createElement('div');
+        card.className = "bg-brand-card p-4 rounded-xl border border-gray-700 flex flex-col md:flex-row justify-between md:items-center gap-3";
+        card.innerHTML = `
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs px-2 py-0.5 rounded border ${badgeColor}">${badgeText}</span>
+              <span class="text-xs text-gray-400">Doador: <strong>${escapeHtml(item.donor)}</strong></span>
+            </div>
+            <h3 class="font-bold text-gray-100 text-base">${escapeHtml(item.title)}</h3>
+            <p class="text-xs text-gray-400">Categoria: ${escapeHtml(item.cat)} | Vencimento: ${escapeHtml(item.validity)}</p>
+          </div>
+          <div>
+            ${item.reserved ? `
+              <span class="bg-gray-800 text-gray-400 text-xs px-3 py-2 rounded block text-center font-bold">✓ Reservado por Sua ONG</span>
+            ` : `
+              <button onclick="reserveItem(${item.id})" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded text-xs transition">
+                🤝 Solicitar / Reservar Doação
+              </button>
+            `}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    async function reserveItem(id) {
+      const items = await loadItems();
+      const updated = items.map(i => i.id === id ? {...i, reserved: true} : i);
+      await saveItems(updated);
+      alert('Reserva efetuada! Termo Digital de Coleta gerado conforme a Lei 14.016.');
+      await renderONG();
+    }
+  </script>
+</body>
+</html>
